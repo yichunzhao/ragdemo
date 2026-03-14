@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  chroma:
+    image: chromadb/chroma
+    container_name: rag-demo-chroma
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma-data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  chroma-data:
+    driver: local
