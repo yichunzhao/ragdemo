@@ -70,10 +70,10 @@
             <artifactId>spring-ai-starter-model-openai</artifactId>
         </dependency>
 
-        <!-- Spring AI - Chroma Vector Store (use ONE, managed by BOM) -->
+        <!-- ✅ NEW name — correct for Spring AI 1.0.x -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-chroma-store</artifactId>
+            <artifactId>spring-ai-starter-vector-store-chroma</artifactId>
         </dependency>
 
         <!-- Test -->
