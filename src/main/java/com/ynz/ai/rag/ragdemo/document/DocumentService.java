@@ -3,10 +3,8 @@ package com.ynz.ai.rag.ragdemo.document;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.reader.TextReader;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -14,6 +12,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -34,7 +33,7 @@ public class DocumentService {
             // Create document with metadata
             String documentId = UUID.randomUUID().toString();
             Document document = new Document(content, Map.of(
-                    "filename", file.getOriginalFilename(),
+                    "filename", Objects.requireNonNull(file.getOriginalFilename()),
                     "documentId", documentId,
                     "description", description != null ? description : "",
                     "uploadTime", System.currentTimeMillis()
