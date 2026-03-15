@@ -69,6 +69,15 @@ Then run:
 ```bash
 docker-compose up -d
 ```
+### Create collection 
+
+```bash
+curl -X POST http://localhost:8000/api/v2/tenants/default_tenant/databases/default_database/collections -H "Content-Type: application/json" -d "{\"name\":\"demo_collection\"}"
+```
+then verify collection is created:
+```bash
+curl http://localhost:8000/api/v2/tenants/default_tenant/databases/default_database/collections
+```
 
 ### Set Environment Variable
 
