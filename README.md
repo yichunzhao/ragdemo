@@ -41,34 +41,21 @@ src/main/java/com/ynz/ai/rag/ragdemo/
 
 ### Setup Chroma Vector Database
 
-Run Chroma using Docker:
+**⚠️ Important Note on ChromaDB Version**
+
+The current version of Spring AI used in this project requires a specific version of ChromaDB to function correctly. Using a different version, such as `latest` or newer images from `chromadb/chroma`, may cause connection issues.
+
+Please use the following Docker image and command:
 
 ```bash
-docker run -d -p 8000:8000 chromadb/chroma
+docker run -d -p 8000:8000 ghcr.io/chroma-core/chroma:1.0.0
 ```
 
-Or using Docker Compose (create `docker-compose.yml`):
-
-```yaml
-version: '3.8'
-services:
-  chroma:
-    image: chromadb/chroma
-    ports:
-      - "8000:8000"
-    volumes:
-      - chroma-data:/chroma/chroma
-    environment:
-      - IS_PERSISTENT=TRUE
-
-volumes:
-  chroma-data:
-```
-
-Then run:
+The `docker-compose.yml` file in this project is also configured to use a compatible version. You can run it with:
 ```bash
 docker-compose up -d
 ```
+
 ### Create collection 
 
 ```bash
