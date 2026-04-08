@@ -12,6 +12,6 @@ public class VectorStoreConfig {
     @Bean
     public TokenTextSplitter textSplitter() {
         log.info("Configuring TokenTextSplitter with default chunk size: 800, overlap: 200");
-        return new TokenTextSplitter(800, 200, 5, 10000, true);
+        return new TokenTextSplitter(800, 200, 5, 10000, true, java.util.Collections.emptyList());
     }
 }

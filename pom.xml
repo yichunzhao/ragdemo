@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.11</version>
+        <version>4.0.5</version>
         <relativePath/>
     </parent>
 
@@ -18,18 +18,30 @@
 
     <properties>
         <java.version>21</java.version>
-        <!-- ✅ Override vulnerable Jackson version -->
-        <jackson-bom.version>2.21.1</jackson-bom.version>
-        <!-- ✅ Fix 2: Commons Lang StackOverflow CVE-2025-48924 -->
-        <commons-lang3.version>3.18.0</commons-lang3.version>
+        <jackson-platform.version>2.21.1</jackson-platform.version>
+        <tools-jackson-bom.version>3.1.1</tools-jackson-bom.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>tools.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${tools-jackson-bom.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson-platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
                 <groupId>org.springframework.ai</groupId>
                 <artifactId>spring-ai-bom</artifactId>
-                <version>1.1.2</version> <!-- ✅ Aligned with chroma store version -->
+                <version>1.1.4</version> <!-- ✅ Aligned with chroma store version -->
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -85,16 +97,6 @@
 
     </dependencies>
 
-    <repositories>
-        <repository>
-            <id>spring-milestones</id>
-            <name>Spring Milestones</name>
-            <url>https://repo.spring.io/milestone</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
 
     <build>
         <plugins>
