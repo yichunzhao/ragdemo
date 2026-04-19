@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @RestControllerAdvice
@@ -19,7 +20,7 @@ public class GlobalExceptionHandler {
 
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("error", "RAG Processing Error");
-        errorResponse.put("message", ex.getMessage());
+        errorResponse.put("message", Objects.toString(ex.getMessage(), "RAG processing failed"));
         errorResponse.put("timestamp", System.currentTimeMillis());
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
@@ -31,7 +32,7 @@ public class GlobalExceptionHandler {
 
         Map<String, Object> errorResponse = new HashMap<>();
         errorResponse.put("error", "Invalid Request");
-        errorResponse.put("message", ex.getMessage());
+        errorResponse.put("message", Objects.toString(ex.getMessage(), "Invalid request"));
         errorResponse.put("timestamp", System.currentTimeMillis());
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
