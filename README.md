@@ -2,83 +2,43 @@
 
 A Retrieval-Augmented Generation (RAG) demo application built with Spring Boot and Spring AI.
 
-## 🏗️ Project Structure (Feature-Based)
+## Project Structure
 
-```
+```text
 src/main/java/com/ynz/ai/rag/ragdemo/
-├── RagDemoApplication.java          # Main application entry point
-│
-├── chat/                             # Chat/Query Feature
-│   ├── ChatController.java          # REST endpoints for chat
-│   ├── ChatService.java             # RAG orchestration logic
-│   ├── ChatRequest.java             # Request DTO
-│   └── ChatResponse.java            # Response DTO
-│
-├── document/                         # Document Management Feature
-│   ├── DocumentController.java      # Document upload endpoints
-│   ├── DocumentService.java         # Document processing logic
-│   ├── DocumentRequest.java         # Request DTO
-│   └── DocumentResponse.java        # Response DTO
-│
-├── config/                           # Configuration
-│   ├── VectorStoreConfig.java       # Vector store & text splitter config
-│   └── SwaggerConfig.java           # API documentation config
-│
-└── common/                           # Shared Components
-    └── exception/
-        ├── RagException.java        # Custom exception
-        └── GlobalExceptionHandler.java  # Global error handling
+├── RagDemoApplication.java
+├── chat/                  # Chat/query endpoints and RAG orchestration
+├── document/              # Document upload and ingestion
+├── config/                # Vector store, text splitter, and Swagger config
+└── common/exception/      # Shared error handling
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
-1. **Java 21** installed
-2. **Maven** installed
-3. **OpenAI API Key** - Set as environment variable `OPENAI_API_KEY`
-4. **Chroma Vector Database** running locally
+1. Java 21
+2. Maven
+3. OpenAI API key set as `OPENAI_API_KEY`
 
-### Setup Chroma Vector Database
-
-**⚠️ Important Note on ChromaDB Version**
-
-The current version of Spring AI used in this project requires a specific version of ChromaDB to function correctly. Using a different version, such as `latest` or newer images from `chromadb/chroma`, may cause connection issues.
-
-Please use the following Docker image and command:
-
-```bash
-docker run -d -p 8000:8000 ghcr.io/chroma-core/chroma:1.0.0
-```
-
-The `docker-compose.yml` file in this project is also configured to use a compatible version. You can run it with:
-```bash
-docker-compose up -d
-```
-
-### Create collection 
-
-```bash
-curl -X POST http://localhost:8000/api/v2/tenants/default_tenant/databases/default_database/collections -H "Content-Type: application/json" -d "{\"name\":\"demo_collection\"}"
-```
-then verify collection is created:
-```bash
-curl http://localhost:8000/api/v2/tenants/default_tenant/databases/default_database/collections
-```
+No Docker or external vector database is required. This demo uses Spring AI's in-memory `SimpleVectorStore`, configured in `VectorStoreConfig`.
 
 ### Set Environment Variable
 
-**Windows (PowerShell):**
+PowerShell:
+
 ```powershell
 $env:OPENAI_API_KEY="your-api-key-here"
 ```
 
-**Windows (Command Prompt):**
+Command Prompt:
+
 ```cmd
 set OPENAI_API_KEY=your-api-key-here
 ```
 
-**Linux/Mac:**
+Linux/macOS:
+
 ```bash
 export OPENAI_API_KEY=your-api-key-here
 ```
@@ -89,30 +49,25 @@ export OPENAI_API_KEY=your-api-key-here
 mvn spring-boot:run
 ```
 
-The application will start on `http://localhost:8080`
+The application starts on `http://localhost:8080`.
 
-## 📚 API Documentation
+Swagger UI is available at:
 
-Once the application is running, access the Swagger UI at:
+```text
+http://localhost:8080/swagger-ui.html
+```
 
-**http://localhost:8080/swagger-ui.html**
+## API Endpoints
 
-## 🔧 API Endpoints
+- `POST /api/chat/query` - Send a query to the RAG system
+- `POST /api/chat/stream` - Stream chat response
+- `POST /api/documents/upload` - Upload a document file
+- `POST /api/documents/text` - Add text content directly
+- `DELETE /api/documents/{documentId}` - Delete a document
 
-### Chat Endpoints
+## Example Usage
 
-- **POST** `/api/chat/query` - Send a query to the RAG system
-- **POST** `/api/chat/stream` - Stream chat response (TODO)
-
-### Document Endpoints
-
-- **POST** `/api/documents/upload` - Upload a document (file)
-- **POST** `/api/documents/text` - Add text content directly
-- **DELETE** `/api/documents/{documentId}` - Delete a document
-
-## 📝 Example Usage
-
-### 1. Add Text Content
+### Add Text Content
 
 ```bash
 curl -X POST http://localhost:8080/api/documents/text \
@@ -123,7 +78,7 @@ curl -X POST http://localhost:8080/api/documents/text \
   }'
 ```
 
-### 2. Query the Knowledge Base
+### Query the Knowledge Base
 
 ```bash
 curl -X POST http://localhost:8080/api/chat/query \
@@ -134,7 +89,7 @@ curl -X POST http://localhost:8080/api/chat/query \
   }'
 ```
 
-### 3. Upload a Document
+### Upload a Document
 
 ```bash
 curl -X POST http://localhost:8080/api/documents/upload \
@@ -142,58 +97,35 @@ curl -X POST http://localhost:8080/api/documents/upload \
   -F "description=Technical documentation"
 ```
 
-## ⚙️ Configuration
+## Configuration
 
 Edit `src/main/resources/application.properties`:
 
 ```properties
-# OpenAI Configuration
 spring.ai.openai.api-key=${OPENAI_API_KEY}
 spring.ai.openai.chat.options.model=gpt-4o-mini
 spring.ai.openai.chat.options.temperature=0.7
-
-# Chroma Vector Store
-spring.ai.vectorstore.chroma.client.host=localhost
-spring.ai.vectorstore.chroma.client.port=8000
-spring.ai.vectorstore.chroma.collection-name=rag-demo-collection
 ```
 
-## 🛠️ Technology Stack
+`SimpleVectorStore` is in-memory. Uploaded documents are cleared when the application restarts, which keeps the project simple for demos.
 
-- **Spring Boot 3.5.11** - Application framework
-- **Spring AI 1.1.2** - AI integration framework
-- **OpenAI GPT-4o-mini** - Language model
-- **Chroma** - Vector database
-- **Lombok** - Reduce boilerplate code
-- **Swagger/OpenAPI** - API documentation
+## Technology Stack
 
-## 📖 How RAG Works in This Application
+- Spring Boot 3.5.14
+- Spring AI 1.1.7
+- OpenAI GPT-4o-mini
+- Spring AI `SimpleVectorStore`
+- Lombok
+- Swagger/OpenAPI
 
-1. **Document Ingestion** (`DocumentService`)
-   - Upload documents or text
-   - Split into chunks using `TokenTextSplitter`
-   - Generate embeddings
-   - Store in Chroma vector database
+## How RAG Works
 
-2. **Query Processing** (`ChatService`)
-   - User sends a question
-   - Retrieve relevant document chunks from vector store
-   - Build context from retrieved documents
-   - Send context + question to OpenAI
-   - Return AI-generated answer with sources
+1. Document ingestion splits uploaded text into chunks.
+2. The embedding model converts chunks into vectors.
+3. `SimpleVectorStore` stores vectors in memory.
+4. Chat queries search the vector store for relevant chunks.
+5. The chat model receives the retrieved context and generates an answer.
 
-## 🔍 Next Steps
+## Notes
 
-- [ ] Implement streaming responses
-- [ ] Add conversation history/memory
-- [ ] Support PDF document uploads
-- [ ] Add authentication/authorization
-- [ ] Implement document deletion from vector store
-- [ ] Add metrics and monitoring
-- [ ] Create frontend UI
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-> This is a demo project intended for learning and experimentation purposes. Feel free to use, modify, and distribute it as you see fit.
+This is a demo project for learning and experimentation. Use a persistent vector database such as Chroma, pgvector, Qdrant, Milvus, Weaviate, or Pinecone when you need stored documents to survive restarts.
