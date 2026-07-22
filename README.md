@@ -6,7 +6,7 @@ The current version uses:
 
 - Ollama for local chat and embedding models
 - PostgreSQL with the PgVector extension for persistent vector storage
-- Docker Compose for the local AI/database infrastructure
+- Docker Compose for the local AI/database infrastructure, started automatically by Spring Boot during development runs
 
 ## Project Structure
 
@@ -27,13 +27,16 @@ src/main/java/com/ynz/ai/rag/ragdemo/
 
 No OpenAI API key is required for this setup.
 
-## Start Ollama and PgVector
+## Run the Application
 
 ```bash
-docker compose up -d
+mvn spring-boot:run
 ```
 
-The compose file starts:
+Spring Boot uses the `spring-boot-docker-compose` runtime dependency to start the services declared in `docker-compose.yml`.
+Docker Desktop must be running, but you do not need to run `docker compose up -d` manually before starting the app.
+
+The compose file provides:
 
 - `rag-demo-ollama` on `localhost:11434`
 - `rag-demo-pgvector` on `localhost:5432`
@@ -43,18 +46,31 @@ The compose file starts:
 
 The first startup can take a while because Ollama downloads the models.
 
-## Run the Application
-
-```bash
-mvn spring-boot:run
-```
-
 The application starts on `http://localhost:8080`.
 
 Swagger UI:
 
 ```text
 http://localhost:8080/swagger-ui.html
+```
+
+## Build the Project
+
+```bash
+mvn clean install
+```
+
+You can also run `RagDemoApplication.java` from IntelliJ IDEA. The same Docker Compose integration applies as long as Docker Desktop is running.
+
+## Manual Docker Commands
+
+Normally these are not required before `mvn spring-boot:run`, but they are useful for inspection and cleanup:
+
+```bash
+docker compose ps
+docker compose logs -f ollama
+docker compose logs -f postgres
+docker compose down
 ```
 
 ## Configuration
@@ -73,9 +89,11 @@ spring.datasource.username=ragdemo
 spring.datasource.password=ragdemo
 spring.ai.vectorstore.pgvector.initialize-schema=true
 spring.ai.vectorstore.pgvector.dimensions=768
+spring.docker.compose.lifecycle-management=start-only
 ```
 
 `nomic-embed-text` produces 768-dimensional embeddings, so PgVector is configured with `dimensions=768`.
+`spring.docker.compose.lifecycle-management=start-only` lets Spring Boot start missing Compose services without stopping them when the app exits.
 
 ## API Endpoints
 
@@ -118,15 +136,6 @@ curl -X POST http://localhost:8080/api/chat/query \
 5. A user question is embedded and searched against PgVector.
 6. Retrieved chunks are inserted into the prompt.
 7. Ollama `llama3.2:1b` generates the answer.
-
-## Useful Docker Commands
-
-```bash
-docker compose ps
-docker compose logs -f ollama
-docker compose logs -f postgres
-docker compose down
-```
 
 To remove persisted vectors and downloaded models:
 
