@@ -8,12 +8,13 @@ This project now demonstrates a fully local RAG stack:
 
 ## Quick Start
 
-### 1. Start Docker Services
+### 1. Run the Application
 
 ```bash
-docker compose up -d
+mvn spring-boot:run
 ```
 
+Spring Boot starts the Docker Compose services automatically.
 The first run downloads `llama3.2:1b` and `nomic-embed-text`, so it can take a few minutes.
 
 Check service status:
@@ -28,15 +29,9 @@ docker compose ps
 mvn clean install
 ```
 
-### 3. Run the Application
+You can also run `RagDemoApplication.java` from IntelliJ IDEA.
 
-```bash
-mvn spring-boot:run
-```
-
-Or run `RagDemoApplication.java` from IntelliJ IDEA.
-
-### 4. Open Swagger UI
+### 3. Open Swagger UI
 
 ```text
 http://localhost:8080/swagger-ui.html
