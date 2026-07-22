@@ -2,6 +2,12 @@
 
 A Retrieval-Augmented Generation (RAG) demo application built with Spring Boot and Spring AI.
 
+The current version uses:
+
+- Ollama for local chat and embedding models
+- PostgreSQL with the PgVector extension for persistent vector storage
+- Docker Compose for the local AI/database infrastructure
+
 ## Project Structure
 
 ```text
@@ -9,41 +15,35 @@ src/main/java/com/ynz/ai/rag/ragdemo/
 ├── RagDemoApplication.java
 ├── chat/                  # Chat/query endpoints and RAG orchestration
 ├── document/              # Document upload and ingestion
-├── config/                # Vector store, text splitter, and Swagger config
+├── config/                # Text splitter and Swagger config
 └── common/exception/      # Shared error handling
 ```
 
-## Getting Started
-
-### Prerequisites
+## Prerequisites
 
 1. Java 21
 2. Maven
-3. OpenAI API key set as `OPENAI_API_KEY`
+3. Docker Desktop
 
-No Docker or external vector database is required. This demo uses Spring AI's in-memory `SimpleVectorStore`, configured in `VectorStoreConfig`.
+No OpenAI API key is required for this setup.
 
-### Set Environment Variable
-
-PowerShell:
-
-```powershell
-$env:OPENAI_API_KEY="your-api-key-here"
-```
-
-Command Prompt:
-
-```cmd
-set OPENAI_API_KEY=your-api-key-here
-```
-
-Linux/macOS:
+## Start Ollama and PgVector
 
 ```bash
-export OPENAI_API_KEY=your-api-key-here
+docker compose up -d
 ```
 
-### Run the Application
+The compose file starts:
+
+- `rag-demo-ollama` on `localhost:11434`
+- `rag-demo-pgvector` on `localhost:5432`
+- `rag-demo-ollama-models`, a one-shot helper that pulls:
+  - `llama3.2:1b` for chat
+  - `nomic-embed-text` for embeddings
+
+The first startup can take a while because Ollama downloads the models.
+
+## Run the Application
 
 ```bash
 mvn spring-boot:run
@@ -51,18 +51,38 @@ mvn spring-boot:run
 
 The application starts on `http://localhost:8080`.
 
-Swagger UI is available at:
+Swagger UI:
 
 ```text
 http://localhost:8080/swagger-ui.html
 ```
 
+## Configuration
+
+Key settings live in `src/main/resources/application.properties`:
+
+```properties
+spring.ai.model.chat=ollama
+spring.ai.model.embedding=ollama
+spring.ai.ollama.base-url=http://localhost:11434
+spring.ai.ollama.chat.model=llama3.2:1b
+spring.ai.ollama.embedding.model=nomic-embed-text
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/ragdemo
+spring.datasource.username=ragdemo
+spring.datasource.password=ragdemo
+spring.ai.vectorstore.pgvector.initialize-schema=true
+spring.ai.vectorstore.pgvector.dimensions=768
+```
+
+`nomic-embed-text` produces 768-dimensional embeddings, so PgVector is configured with `dimensions=768`.
+
 ## API Endpoints
 
-- `POST /api/chat/query` - Send a query to the RAG system
-- `POST /api/chat/stream` - Stream chat response
-- `POST /api/documents/upload` - Upload a document file
 - `POST /api/documents/text` - Add text content directly
+- `POST /api/documents/upload` - Upload a text document file
+- `POST /api/chat/query` - Ask a RAG question
+- `POST /api/chat/stream` - Stream chat response
 - `DELETE /api/documents/{documentId}` - Delete a document
 
 ## Example Usage
@@ -73,8 +93,8 @@ http://localhost:8080/swagger-ui.html
 curl -X POST http://localhost:8080/api/documents/text \
   -H "Content-Type: application/json" \
   -d '{
-    "content": "Spring AI is a framework for building AI applications with Spring Boot. It provides abstractions for working with various AI models and vector stores.",
-    "title": "Spring AI Introduction"
+    "content": "Spring AI is a framework for building AI applications with Spring Boot. It supports local models through Ollama and vector stores such as PgVector.",
+    "title": "Spring AI Local RAG"
   }'
 ```
 
@@ -84,48 +104,32 @@ curl -X POST http://localhost:8080/api/documents/text \
 curl -X POST http://localhost:8080/api/chat/query \
   -H "Content-Type: application/json" \
   -d '{
-    "question": "What is Spring AI?",
+    "question": "What does this project use for local RAG?",
     "topK": 3
   }'
 ```
 
-### Upload a Document
-
-```bash
-curl -X POST http://localhost:8080/api/documents/upload \
-  -F "file=@/path/to/your/document.txt" \
-  -F "description=Technical documentation"
-```
-
-## Configuration
-
-Edit `src/main/resources/application.properties`:
-
-```properties
-spring.ai.openai.api-key=${OPENAI_API_KEY}
-spring.ai.openai.chat.options.model=gpt-4o-mini
-spring.ai.openai.chat.options.temperature=0.7
-```
-
-`SimpleVectorStore` is in-memory. Uploaded documents are cleared when the application restarts, which keeps the project simple for demos.
-
-## Technology Stack
-
-- Spring Boot 3.5.14
-- Spring AI 1.1.7
-- OpenAI GPT-4o-mini
-- Spring AI `SimpleVectorStore`
-- Lombok
-- Swagger/OpenAPI
-
 ## How RAG Works
 
-1. Document ingestion splits uploaded text into chunks.
-2. The embedding model converts chunks into vectors.
-3. `SimpleVectorStore` stores vectors in memory.
-4. Chat queries search the vector store for relevant chunks.
-5. The chat model receives the retrieved context and generates an answer.
+1. Documents are uploaded as text or files.
+2. `TokenTextSplitter` splits content into chunks.
+3. Ollama `nomic-embed-text` creates embeddings.
+4. PgVector stores the chunks and vectors in PostgreSQL.
+5. A user question is embedded and searched against PgVector.
+6. Retrieved chunks are inserted into the prompt.
+7. Ollama `llama3.2:1b` generates the answer.
 
-## Notes
+## Useful Docker Commands
 
-This is a demo project for learning and experimentation. Use a persistent vector database such as Chroma, pgvector, Qdrant, Milvus, Weaviate, or Pinecone when you need stored documents to survive restarts.
+```bash
+docker compose ps
+docker compose logs -f ollama
+docker compose logs -f postgres
+docker compose down
+```
+
+To remove persisted vectors and downloaded models:
+
+```bash
+docker compose down -v
+```

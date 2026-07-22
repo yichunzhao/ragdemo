@@ -1,21 +1,25 @@
 # Getting Started with RAG Demo
 
-This project is configured for a no-Docker demo flow. It uses Spring AI's in-memory `SimpleVectorStore`, so you only need Java, Maven, and an OpenAI API key.
+This project now demonstrates a fully local RAG stack:
+
+- Ollama runs the chat and embedding models.
+- PgVector stores embeddings persistently in PostgreSQL.
+- Docker Compose starts both services.
 
 ## Quick Start
 
-### 1. Verify Environment Variable
+### 1. Start Docker Services
 
-PowerShell:
-
-```powershell
-echo $env:OPENAI_API_KEY
+```bash
+docker compose up -d
 ```
 
-If it is missing:
+The first run downloads `llama3.2:1b` and `nomic-embed-text`, so it can take a few minutes.
 
-```powershell
-$env:OPENAI_API_KEY="sk-your-api-key-here"
+Check service status:
+
+```bash
+docker compose ps
 ```
 
 ### 2. Build the Project
@@ -46,65 +50,59 @@ http://localhost:8080/swagger-ui.html
 curl -X POST http://localhost:8080/api/documents/text \
   -H "Content-Type: application/json" \
   -d '{
-    "content": "Spring AI is a framework that provides abstractions for integrating AI models into Spring Boot applications. It supports OpenAI and many other providers. Spring AI also includes vector store integrations for RAG applications.",
-    "title": "Spring AI Overview"
+    "content": "This RAG demo uses Ollama for local LLM inference and PgVector for persistent vector search.",
+    "title": "Local RAG Stack"
   }'
 ```
 
-### Query the Knowledge Base
+### Ask a Question
 
 ```bash
 curl -X POST http://localhost:8080/api/chat/query \
   -H "Content-Type: application/json" \
   -d '{
-    "question": "What is Spring AI and what providers does it support?",
+    "question": "What does the local RAG demo use?",
     "topK": 3
   }'
 ```
 
-### Upload a Text File
-
-Create `sample.txt`:
+## Pipeline
 
 ```text
-Retrieval-Augmented Generation (RAG) combines information retrieval with text generation. It retrieves relevant documents from a knowledge base and uses them as context for generating accurate responses.
-```
-
-Upload it:
-
-```bash
-curl -X POST http://localhost:8080/api/documents/upload \
-  -F "file=@sample.txt" \
-  -F "description=RAG explanation"
-```
-
-## How It Works
-
-```text
-Upload Document -> Split into Chunks -> Generate Embeddings -> Store in SimpleVectorStore
-User Question -> Search Vector Store -> Retrieve Chunks -> Build Context -> Send to OpenAI
+Upload Document -> Split into Chunks -> Embed with Ollama -> Store in PgVector
+User Question -> Embed with Ollama -> Search PgVector -> Build Context -> Generate with Ollama
 ```
 
 ## Troubleshooting
 
-### Documents disappear after restart
+### Ollama model is missing
 
-That is expected. `SimpleVectorStore` is in-memory, so uploaded content is cleared when the app stops. Upload the demo documents again after each restart.
+Run:
 
-### Invalid API key
-
-Check your environment variable:
-
-```powershell
-echo $env:OPENAI_API_KEY
+```bash
+docker compose run --rm ollama-models
 ```
 
-### No documents found
+### PgVector table or schema issue
 
-Add content first using `/api/documents/text` or `/api/documents/upload`, then query again.
+The app is configured with:
 
-## Tips
+```properties
+spring.ai.vectorstore.pgvector.initialize-schema=true
+```
 
-- Adjust chunk size and overlap in `VectorStoreConfig.java`.
-- Use `gpt-4o-mini` for cost-efficient demos.
-- Increase `topK` for more retrieved context, or decrease it for faster responses.
+If you changed embedding dimensions, reset the database volume:
+
+```bash
+docker compose down -v
+docker compose up -d
+```
+
+### Docker services are not reachable
+
+Check:
+
+```bash
+docker compose ps
+docker compose logs -f
+```
