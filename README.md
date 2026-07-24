@@ -4,6 +4,8 @@ A Retrieval-Augmented Generation (RAG) demo application built with Spring Boot a
 
 The current version uses:
 
+- Spring Boot 4.1.0
+- Spring AI 2.0.0
 - Ollama for local chat and embedding models
 - PostgreSQL with the PgVector extension for persistent vector storage
 - Docker Compose for the local AI/database infrastructure, started automatically by Spring Boot during development runs

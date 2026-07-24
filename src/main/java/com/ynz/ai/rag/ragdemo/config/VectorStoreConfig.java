@@ -13,6 +13,13 @@ public class VectorStoreConfig {
     @Bean
     public TokenTextSplitter textSplitter() {
         log.info("Configuring TokenTextSplitter with default chunk size: 800, overlap: 200");
-        return new TokenTextSplitter(800, 200, 5, 10000, true, List.of(';', '.', '!', '?', '\n'));
+        return TokenTextSplitter.builder()
+                .withChunkSize(800)
+                .withMinChunkSizeChars(200)
+                .withMinChunkLengthToEmbed(5)
+                .withMaxNumChunks(10000)
+                .withKeepSeparator(true)
+                .withPunctuationMarks(List.of(';', '.', '!', '?', '\n'))
+                .build();
     }
 }

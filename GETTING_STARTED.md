@@ -2,6 +2,7 @@
 
 This project now demonstrates a fully local RAG stack:
 
+- Spring Boot 4.1.0 and Spring AI 2.0.0 run the application.
 - Ollama runs the chat and embedding models.
 - PgVector stores embeddings persistently in PostgreSQL.
 - Docker Compose starts both services.
