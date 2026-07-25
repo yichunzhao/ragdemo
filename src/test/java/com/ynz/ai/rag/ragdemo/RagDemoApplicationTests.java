@@ -6,7 +6,10 @@ import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-@SpringBootTest(properties = "springdoc.swagger-ui.path=/swagger-ui.html")
+@SpringBootTest(args = "help", properties = {
+		"springdoc.swagger-ui.path=/swagger-ui.html",
+		"spring.shell.interactive.enabled=false"
+})
 class RagDemoApplicationTests {
 
 	@MockitoBean

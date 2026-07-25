@@ -38,6 +38,14 @@ You can also run `RagDemoApplication.java` from IntelliJ IDEA.
 http://localhost:8080/swagger-ui.html
 ```
 
+The terminal also becomes an interactive shell:
+
+```text
+shell:> ingest-text "This RAG demo uses Ollama and PgVector." --title "Local RAG Stack"
+shell:> ask "What does the local RAG demo use?" --top-k 3
+shell:> exit
+```
+
 ## Test the Application
 
 ### Add Knowledge

@@ -56,6 +56,15 @@ Swagger UI:
 http://localhost:8080/swagger-ui.html
 ```
 
+The same process also opens an interactive Spring Shell prompt in the terminal. Use it to talk to the RAG pipeline directly:
+
+```text
+shell:> ingest-text "Spring AI supports local RAG with Ollama and PgVector." --title "Local RAG"
+shell:> ask "What does this project use for local RAG?" --top-k 3
+shell:> help
+shell:> exit
+```
+
 ## Build the Project
 
 ```bash
@@ -104,6 +113,13 @@ spring.docker.compose.lifecycle-management=start-only
 - `POST /api/chat/query` - Ask a RAG question
 - `POST /api/chat/stream` - Stream chat response
 - `DELETE /api/documents/{documentId}` - Delete a document
+
+## Interactive Shell Commands
+
+- `ask "<question>" --top-k 3` - Ask a question through the same RAG pipeline used by the REST API
+- `ingest-text "<content>" --title "<title>"` - Add text content to PgVector
+- `help` - Show available shell commands
+- `exit` - Stop the shell and application
 
 ## Example Usage
 
