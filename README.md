@@ -152,8 +152,10 @@ curl -X POST http://localhost:8080/api/chat/query \
 3. Ollama `nomic-embed-text` creates embeddings.
 4. PgVector stores the chunks and vectors in PostgreSQL.
 5. A user question is embedded and searched against PgVector.
-6. Retrieved chunks are inserted into the prompt.
-7. Ollama `llama3.2:1b` generates the answer.
+6. If matching chunks are found, the answer uses RAG context and returns `answerMode: "RAG"`.
+7. If no chunks are found, the app falls back to Ollama model knowledge and returns `answerMode: "MODEL_KNOWLEDGE"` with no sources.
+
+The fallback is explicit by design, so users can see whether an answer came from the knowledge base or from the model's general knowledge.
 
 To remove persisted vectors and downloaded models:
 

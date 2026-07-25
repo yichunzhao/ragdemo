@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.ynz.ai.rag.ragdemo.chat.AnswerMode;
 import com.ynz.ai.rag.ragdemo.chat.ChatResponse;
 import com.ynz.ai.rag.ragdemo.chat.ChatService;
 import com.ynz.ai.rag.ragdemo.document.DocumentResponse;
@@ -24,12 +25,14 @@ class RagShellCommandsTests {
         when(chatService.chat(any())).thenReturn(ChatResponse.builder()
                 .question("What is RAG?")
                 .answer("RAG combines retrieval and generation.")
+                .answerMode(AnswerMode.RAG)
                 .sources(List.of("Retrieval-Augmented Generation source text"))
                 .build());
 
         String output = commands.ask("What is RAG?", 3);
 
         assertThat(output)
+                .contains("Mode: RAG")
                 .contains("Answer:")
                 .contains("RAG combines retrieval and generation.")
                 .contains("Sources:")

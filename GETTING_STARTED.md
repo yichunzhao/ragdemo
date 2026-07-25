@@ -77,6 +77,9 @@ Upload Document -> Split into Chunks -> Embed with Ollama -> Store in PgVector
 User Question -> Embed with Ollama -> Search PgVector -> Build Context -> Generate with Ollama
 ```
 
+When PgVector has matching context, responses use `answerMode: "RAG"` and include sources.
+When no context is found, the app falls back to the LLM's general knowledge with `answerMode: "MODEL_KNOWLEDGE"`.
+
 ## Troubleshooting
 
 ### Ollama model is missing

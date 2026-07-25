@@ -53,6 +53,9 @@ public class RagShellCommands {
 
     private String formatChatResponse(ChatResponse response) {
         StringBuilder output = new StringBuilder();
+        output.append("Mode: ")
+                .append(response.getAnswerMode())
+                .append("\n\n");
         output.append("Answer:\n")
                 .append(response.getAnswer())
                 .append("\n");
@@ -65,6 +68,8 @@ public class RagShellCommands {
                         .append(sources.get(i))
                         .append("\n");
             }
+        } else {
+            output.append("\nSources: none found; answer used model knowledge.\n");
         }
 
         return output.toString();

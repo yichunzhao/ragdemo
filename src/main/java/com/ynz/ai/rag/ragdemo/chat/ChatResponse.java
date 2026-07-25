@@ -24,6 +24,9 @@ public class ChatResponse {
     @Schema(description = "Source documents used to generate the answer")
     private List<String> sources;
 
+    @Schema(description = "Whether the answer was grounded in retrieved RAG context or model knowledge")
+    private AnswerMode answerMode;
+
     @Schema(description = "Conversation ID")
     private String conversationId;
 }

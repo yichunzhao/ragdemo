@@ -2,7 +2,6 @@ package com.ynz.ai.rag.ragdemo.chat;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -26,25 +25,21 @@ public class ChatService {
         // Step 1: Retrieve relevant documents from vector store
         List<String> relevantDocs = retrieveRelevantDocuments(request.getQuestion(), request.getTopK());
 
-        // Step 2: Build context from retrieved documents
-        String context = buildContext(relevantDocs);
+        AnswerMode answerMode = relevantDocs.isEmpty() ? AnswerMode.MODEL_KNOWLEDGE : AnswerMode.RAG;
 
-        // Step 3: Create prompt with context
-        String prompt = buildPrompt(request.getQuestion(), context);
+        // Step 2: Create prompt with RAG context or model-knowledge fallback instructions
+        String prompt = buildPrompt(request.getQuestion(), relevantDocs, answerMode);
 
-        // Step 4: Call ChatModel
-        String answer = ChatClient.create(chatModel)
-                .prompt()
-                .user(prompt)
-                .call()
-                .content();
+        // Step 3: Call ChatModel
+        String answer = chatModel.call(prompt);
 
-        log.info("Generated answer for question: {}", request.getQuestion());
+        log.info("Generated {} answer for question: {}", answerMode, request.getQuestion());
 
         return ChatResponse.builder()
                 .answer(answer)
                 .question(request.getQuestion())
                 .sources(relevantDocs)
+                .answerMode(answerMode)
                 .build();
     }
 
@@ -63,10 +58,6 @@ public class ChatService {
     }
 
     private String buildContext(List<String> documents) {
-        if (documents.isEmpty()) {
-            return "No relevant context found.";
-        }
-
         StringBuilder context = new StringBuilder("Context:\n");
         for (int i = 0; i < documents.size(); i++) {
             context.append(String.format("[%d] %s\n\n", i + 1, documents.get(i)));
@@ -74,16 +65,29 @@ public class ChatService {
         return context.toString();
     }
 
-    private String buildPrompt(String question, String context) {
+    private String buildPrompt(String question, List<String> documents, AnswerMode answerMode) {
+        if (answerMode == AnswerMode.MODEL_KNOWLEDGE) {
+            return String.format("""
+                    You are a helpful AI assistant.
+                    No knowledge-base context was found for this question.
+                    Answer from your general model knowledge.
+                    Be clear that no RAG sources were found.
+
+                    Question: %s
+
+                    Answer:
+                    """, question);
+        }
+
         return String.format("""
-                You are a helpful AI assistant. Answer the user's question based on the provided context.
-                If the context doesn't contain relevant information, say so politely.
+                You are a helpful AI assistant.
+                Answer the user's question using the provided knowledge-base context.
+                If the context is insufficient, say what is missing instead of inventing details.
 
                 %s
 
                 Question: %s
-
                 Answer:
-                """, context, question);
+                """, buildContext(documents), question);
     }
 }
