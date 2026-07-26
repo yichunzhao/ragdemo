@@ -2,6 +2,9 @@ package com.ynz.ai.rag.ragdemo.document;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.VectorStore;
@@ -27,8 +30,7 @@ public class DocumentService {
         try {
             log.info("Processing document: {}", file.getOriginalFilename());
 
-            // Read file content
-            String content = new String(file.getBytes(), StandardCharsets.UTF_8);
+            String content = extractContent(file);
 
             // Create document with metadata
             String documentId = UUID.randomUUID().toString();
@@ -58,6 +60,24 @@ public class DocumentService {
             log.error("Error processing document", e);
             throw new RuntimeException("Failed to process document", e);
         }
+    }
+
+    private String extractContent(MultipartFile file) throws IOException {
+        if (isPdf(file)) {
+            try (PDDocument document = Loader.loadPDF(file.getBytes())) {
+                return new PDFTextStripper().getText(document);
+            }
+        }
+
+        return new String(file.getBytes(), StandardCharsets.UTF_8);
+    }
+
+    private boolean isPdf(MultipartFile file) {
+        String contentType = file.getContentType();
+        String filename = file.getOriginalFilename();
+
+        return "application/pdf".equalsIgnoreCase(contentType)
+                || (filename != null && filename.toLowerCase().endsWith(".pdf"));
     }
 
     public DocumentResponse processText(DocumentRequest request) {

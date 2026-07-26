@@ -79,6 +79,13 @@
             <artifactId>spring-boot-starter-jdbc</artifactId>
         </dependency>
 
+        <!-- PDF text extraction for document ingestion -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>3.0.6</version>
+        </dependency>
+
         <!-- Start local Docker Compose services during development runs -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
